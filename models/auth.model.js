@@ -55,4 +55,18 @@ userSchema.pre("save", async function (next) {
     return next(error);
   }
 });
+
 // Methode pour comparer le mot de passe
+userSchema.method.comparePassword = async function (paramPassword) {
+  try {
+    return await bcrypt.compare(paramPassword, this.password);
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+// Export du modele, du schema et mis dan sla vaqriable User
+const User = mongoose.model("User", userSchema);
+
+// Export de la variable User
+module.exports = User;
