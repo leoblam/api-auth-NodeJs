@@ -106,7 +106,7 @@ module.exports.login = async (req, res) => {
     res.status(200).json({ message: "Connexion reussi !", token });
   } catch (error) {
     // Renvoie une erreur si il y a un probleme lors de la connexion de l'utilisateur
-    console.error("Erruer lors de la connextion", error.message);
+    console.error("Erreur lors de la connextion", error.message);
     return res.status(500).json({ message: "Erreur lors de la connexion" });
   }
 };

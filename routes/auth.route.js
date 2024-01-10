@@ -7,4 +7,6 @@ router.post("/register", authController.register);
 // Route pour connection
 router.post("/login", authController.login);
 
+// router.post("/athentificate", authController.athentificate);
+
 module.exports = router;
