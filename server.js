@@ -7,6 +7,8 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 
 // Import de routes pour l'authentification
+const authRoutes = require("./routes/auth.route");
+
 // Import de la configuraton de la base de donnees
 const connectDB = require("./config/db");
 
@@ -21,6 +23,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Utilisation des routes pour l'authentification
+app.use("/api", authRoutes);
 
 // Configuration des options cors
 const corsOptions = {
@@ -40,7 +43,6 @@ const start = async () => {
   try {
     // Connexion a la base de donnees
     await connectDB();
-    console.log("Connexion a la base d edonnees reussi");
     // Demarrage du serveur sur le port specifie
     app.listen(PORT, () =>
       console.log(`Le serveur a demarre sur le port ${PORT}`)
