@@ -7,7 +7,7 @@ const url = process.env.MONGO_URI;
 const connectDB = () => {
   mongoose
     .connect(url)
-    // Le .then est une  promesses qui permet de gerer la connection a la base de donnees et le .catch pertmet de gerer et capturer les erreurs.
+    // Le .then est une  promesses qui permet de gerer la connection a la base de donnees et le .catch permet de gerer et capturer les erreurs.
     .then(() => {
       console.log("Connection a la base de donnees reussie");
     })

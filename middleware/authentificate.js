@@ -10,7 +10,7 @@ module.exports.authentificate = async (req, res, next) => {
     // Definition de la variable pour l'autorisation
     const authHeader = req.header("Authorization");
     // Condition qui verifie la variable et qui ajoute un Bearer
-    if (!authHeader || !authHeader.startWith("Bearer ")) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         message:
           "Vous devez etre connecte en tant qu'administrateur pour acceder a cette ressource",

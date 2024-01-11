@@ -12,7 +12,7 @@ router.post("/login", authController.login);
 // Route protegee
 router.get("/dashboard", authMiddleware.authentificate, (req, res) => {
   // Verifier si l"utilisateur est un admin
-  if (req.user.role === admin) {
+  if (req.user.role === "admin") {
     // Definition de req.isAdmin sera egal a true pour les administrateur
     req.isAdmin = true;
     // Envoyer une reponse de succes
@@ -21,7 +21,7 @@ router.get("/dashboard", authMiddleware.authentificate, (req, res) => {
     //Envoyer une reponse pour les utilisateurs non admin
     return res.status(403).json({
       message:
-        "Action non autorisee, seul lesadministrateurs peuvent acceder a cette page",
+        "Action non autorisee, seul les administrateurs peuvent acceder a cette page",
     });
   }
 });
