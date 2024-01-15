@@ -1,6 +1,5 @@
 const productModel = require("../models/product.model");
-
-const fs = require("fs");
+const cloudinary = require("cloudinary").v2;
 
 // Fonction pour la creation d'un produit (accessible uniquement par ladministrateur)
 
@@ -17,21 +16,25 @@ module.exports.createProduct = async (req, res) => {
     // Recuperation des donnes du formulaire
     const { title, description, price } = req.body;
     // Verification si une image est telechargee
-    if (!req.file) {
+    if (!req.cloudinaryUrl || !req.file) {
       return res
         .status(400)
         .json({ message: "Veuillez telecharger une image" });
     }
-    // Declaration de variable pour recuperer le chemin de l'image apres le telechargement
-    const imageUrl = req.file.path;
     // Declaration de variable pour recuperer l'id de l'utilisateur qui va poster un produit
     const userId = req.user._id;
+
+    // Utilisation de l'url de cloudinary et du public_id provenant du middleware
+    const imageUrl = req.cloudinaryUrl;
+    const imagePublicId = req.file.public_id;
+
     // Creation d'un nouveau produit
     const newProduct = await productModel.create({
       title,
       description,
       price,
       imageUrl,
+      imagePublicId,
       createdBy: userId,
     });
     // renvoie une reponse positive si le produit est bien enregistre
@@ -92,16 +95,34 @@ module.exports.deleteProduct = async (req, res) => {
           "Supprimer un produit est une action reservee aux administrateurs",
       });
     }
-    // Recuperation de l'id du produit
+    // Recuperation de l'id du produit pour le mettre en parametre d'url
     const productId = req.params.id;
-    // Suppression du produit
+    // Recuperation de l'id du produit par rapport au modele
+    const product = await productModel.findById(productId);
+    // Condition si le produit existe
+    if (!product) {
+      return res.status(404).json({ message: "Produit non trouve" });
+    }
+    // Rechercher l'id de l'image cloudinary
+    const imagePublicId = product.imagePublicId;
+    // Supression su produit
     const deletedProduct = await productModel.findByIdAndDelete(productId);
-    // Condition si le produit est introuvable
+    // Verifier si deletedProduct existe
     if (!deletedProduct) {
       return res.status(404).json({ message: "Produit non trouve" });
     }
+    console.log("Image Public ID : ", imagePublicId);
+    console.log("Produit supprime avec succes");
+
+    // Suppression de l'image dans cloudinary
+    if (imagePublicId) {
+      await cloudinary.uploader.destroy(imagePublicId);
+      console.log("Image supprime avec succes");
+    }
+    // Message de supression reussi
     return res.status(200).json({ message: "Produit supprime avec succes" });
   } catch (error) {
+    // Message de supression non reussi
     console.error("Erreur lors de la suppression du produit :", error.message);
     res
       .status(500)
@@ -136,11 +157,12 @@ module.exports.updateProduct = async (req, res) => {
     // Verifier si une nouvelle image est telecharge et mettre a jour le chemin de l'image
     if (req.file) {
       // Suprimmer l'ancienne image si il y en a une
-      if (existingProduct.image) {
-        fs.unlinkSync(existingProduct.image);
+      if (existingProduct.imagePublicId) {
+        await cloudinary.uploader.destroy(existingProduct.imagePublicId);
       }
-      // reinjecte le chemin via la valeur de l'input
-      existingProduct.imageUrl = req.file.path;
+      // Affecte un nouveau chemin et un nouvel ID a la nouvelle image
+      existingProduct.imageUrl = req.cloudinaryUrl;
+      existingProduct.imagePublicId = req.file.public_id;
     }
     // Enregistrer les modifications dans la bdd
     const updatedProduct = await existingProduct.save();

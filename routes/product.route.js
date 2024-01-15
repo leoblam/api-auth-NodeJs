@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const productController = require("../controllers/product.controller");
 const authMiddleware = require("../middleware/authentificate");
-const upload = require("../middleware/cloudinaryUpload");
+const cloudinaryUpload = require("../middleware/cloudinaryUpload");
 
 //Route pour la creation d'un produit en tant au'admin en prenant en compte authMiddleware.authentificate
 router.post(
@@ -21,7 +21,6 @@ router.get("/product/:id", productController.getProductById);
 router.delete(
   "/delete-product/:id",
   authMiddleware.authentificate,
-  cloudinaryUpload,
   productController.deleteProduct
 );
 
