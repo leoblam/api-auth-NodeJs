@@ -6,6 +6,7 @@ const productSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
+    required: [null],
   },
   title: {
     type: String,
@@ -19,8 +20,12 @@ const productSchema = new mongoose.Schema({
     type: Number,
     required: [true, "Veuillez renseigner le prix de votre produit."],
   },
-  imageURL: {
-    type: string,
+  imageUrl: {
+    type: String,
+  },
+  imagePublicId: {
+    type: String,
+    default: mull,
   },
   timestamp: {
     type: Date,

@@ -11,6 +11,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { connexion } = require("mongoose");
 
+//Import du module Validator pour la validation des emails
+const validator = require("validator");
+
 // Fonction pour l'inscription
 module.exports.register = async (req, res) => {
   // Validation des donnes d'entree
@@ -30,6 +33,11 @@ module.exports.register = async (req, res) => {
       return res.status(400).json({
         message: "Le mot de passe doit contenur au moins 6 caracteres.",
       });
+    }
+    //Verification de la validite email avec validator
+    if (!validator.isEmail(email)) {
+      //Renvoie une erreur si l'email n'est pas valide
+      return res.status(400).json({ message: "L'email est invalide" });
     }
     // Verification de l'email si il existe deja en bdd
     const existingUser = await authModel.findOne({ email });
@@ -90,7 +98,7 @@ module.exports.login = async (req, res) => {
       });
     }
     // Renvoie d'un message de succes
-    console.log("Mot de passe incorrect");
+    console.log("Vous etes bien connecte");
     // Creation du token jwt
     const payload = {
       user: {

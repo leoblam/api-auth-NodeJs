@@ -15,6 +15,9 @@ const productRoutes = require("./routes/product.route");
 // Import de la configuraton de la base de donnees
 const connectDB = require("./config/db");
 
+// Import de Cloudinary
+const cloudinary = require("cloudinary").v2;
+
 // Initialisation de l'application Express
 const app = express();
 
@@ -30,6 +33,13 @@ app.use("/api", authRoutes);
 
 // Utilisation des routes pour la creation des produits
 app.use("/api", productRoutes);
+
+// Configuration de cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET,
+});
 
 // Configuration des options cors
 const corsOptions = {
