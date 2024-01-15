@@ -1,5 +1,8 @@
-// Import du modele utilisateur
+// Import du modele d'authentification
 const authModel = require("../models/auth.model");
+
+// Import du modele utilisateur
+const authModel = require("../models/user.model");
 
 // Import de la validation des donnees
 const { validationResult } = require("express-validator");

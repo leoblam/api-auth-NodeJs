@@ -5,8 +5,7 @@ const mongoose = require("mongoose");
 const productSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: [null],
+    ref: "Auth",
   },
   title: {
     type: String,
@@ -33,8 +32,8 @@ const productSchema = new mongoose.Schema({
   },
 });
 
-// Export du modele, du schema et mis dan sla vaqriable User
+// Export du modele, du schema et mis dans la variable Product
 const Product = mongoose.model("Product", productSchema);
 
-// Export de la variable User
+// Export de la variable Product
 module.exports = Product;
