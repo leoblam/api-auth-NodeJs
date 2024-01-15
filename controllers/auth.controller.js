@@ -29,7 +29,7 @@ module.exports.register = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
     // Recuperation des donnes du formulaire
-    const { lastname, firstname, email, password } = req.body;
+    const { email, password } = req.body;
     // Verification de la longueur du mot de passe avec une condition
     if (password.length < 6) {
       // Verification de la longueur du mot de passe (6 caracteres minimum) et renvoie une erreur si le mot de passe est trop court
@@ -52,7 +52,7 @@ module.exports.register = async (req, res) => {
       });
     }
     // Creation d'un nouvel utilisateur
-    const user = authModel.create({ lastname, firstname, email, password });
+    const user = authModel.create({ email, password });
     // Renvoie une reponse positive si l'utilisateuir est bien enregiste
     return res.status(201).json({
       message: "Utilisateur creer avec success",
