@@ -9,9 +9,40 @@ const validator = require("validator");
 
 // Definistion du schema de l'utilisateur
 const authSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+  lastname: {
+    type: String,
+    required: [true, "Veuillez renseigner votre nom de fanille."],
+  },
+  firstname: {
+    type: String,
+    required: [true, "Veuillez renseigner votre prenom."],
+  },
+  birthday: {
+    type: String,
+    required: [true, "Veuillez renseigner votre date de naissance."],
+  },
+  address: {
+    type: String,
+    required: [true, "Veuillez renseigner votre adresse."],
+  },
+  zipcode: {
+    type: String,
+    required: [true, "Veuillez renseigner votre code postal."],
+  },
+  city: {
+    type: String,
+    required: [true, "Veuillez renseigner votre ville."],
+  },
+  phone: {
+    type: Number,
+    required: [true, "Veuillez renseigner votre numero de telephone."],
+  },
+  avatarUrl: {
+    type: String,
+  },
+  avatarPublicId: {
+    type: String,
+    default: null,
   },
   email: {
     type: String,

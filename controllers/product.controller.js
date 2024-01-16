@@ -99,7 +99,7 @@ module.exports.deleteProduct = async (req, res) => {
     const productId = req.params.id;
     // Recuperation de l'id du produit par rapport au modele
     const product = await productModel.findById(productId);
-    // Condition si le produit existe
+    // Condition si le produit n'existe pas
     if (!product) {
       return res.status(404).json({ message: "Produit non trouve" });
     }
@@ -150,7 +150,7 @@ module.exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Produit non trouve" });
     }
     // Mettre a jour les proprietes du produit avec les donnees du corps de la requete
-    existingProduct.title = req.body.title || existingProduct.body.title;
+    existingProduct.title = req.body.title || existingProduct.title;
     existingProduct.description =
       req.body.description || existingProduct.description;
     existingProduct.price = req.body.price || existingProduct.price;
