@@ -19,26 +19,20 @@ router.get(
   authMiddleware.authentificate,
   authController.getAllUsers
 );
+// Route pour recuperer un  utilisateurvia son id
+router.get("/user/:id", authMiddleware.authentificate, authController.getUser);
+
+// Route pour le profil utilisateur
+router.get("/profil/:id", authController.profil);
 
 // Route pour le mot de passe oublie
 
 // Route protegee
-router.get("/dashboard", authMiddleware.authentificate, (req, res) => {
-  // Verifier si l"utilisateur est un admin
-  if (req.user.role === "admin") {
-    // Definition de req.isAdmin sera egal a true pour les administrateur
-    req.isAdmin = true;
-    // Envoyer une reponse de succes
-    return res.status(200).json({ message: "Bienvenu administrateur" });
-  } else {
-    //Envoyer une reponse pour les utilisateurs non admin
-    return res.status(403).json({
-      message:
-        "Action non autorisee, seul les administrateurs peuvent acceder a cette page",
-    });
-  }
-});
-
+router.get(
+  "/dashboard",
+  authMiddleware.authentificate,
+  authController.dashboard
+);
 // Admin :
 //  Route pour completer les informations
 //  Route pour voir mes informations

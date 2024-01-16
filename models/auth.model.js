@@ -34,7 +34,7 @@ const authSchema = new mongoose.Schema({
     required: [true, "Veuillez renseigner votre ville."],
   },
   phone: {
-    type: Number,
+    type: String,
     required: [true, "Veuillez renseigner votre numero de telephone."],
   },
   avatarUrl: {

@@ -261,3 +261,92 @@ module.exports.getAllUsers = async (req, res) => {
       .json({ message: "Erreur lors de la recuperation des utilisateurs" });
   }
 };
+
+// Fonction pour recuperer utilisateur via son ID
+module.exports.getUser = async (req, res) => {
+  try {
+    // Verifier si l'utilisateur est admin
+    if (req.user.role !== "admin") {
+      //retour d'un message d'erreur
+      return res.status(403).json({
+        message:
+          "Afficher un utilisateur via son ID est une action reservee aux administrateurs",
+      });
+    }
+    // Declaration de la variable qui va recherche l'id de l'utilisateur
+    const userId = req.params.id;
+    // Recuperation de tous les utilisateurs
+    const user = await authModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouve" });
+    }
+    // Reponse de succes
+    res.status(200).json({ message: "Utilisateur :", userId, user });
+    console.log("Utilisateur :", userId);
+  } catch (error) {
+    console.error(
+      "Erreur lors de la recuperation de l'utilisateurs :",
+      error.message
+    );
+    res
+      .status(500)
+      .json({ message: "Erreur lors de la recuperation des utilisateurs" });
+  }
+};
+
+module.exports.profil = async (req, res) => {
+  try {
+    // Declaration de la variable qui va recherche l'id de l'utilisateur
+    const userId = req.params.id;
+    // Recuperation de tous les utilisateurs
+    const user = await authModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouve" });
+    }
+    // Reponse de succes
+    res.status(200).json({
+      message: `Profil :`,
+      user,
+    });
+    console.log(`Bonjour,  ${user.firstname}, voici votre profil :
+    Nom de famille :  ${user.lastname}
+    Prenom :  ${user.firstname}
+    Date de naissance :  ${user.birthday}
+    Adresse :  ${user.address}, ${user.zipcode}, ${user.city}
+    Numero de telephone :  ${user.phone}
+    Email :  ${user.email}
+    Mot de passe :  ${user.password}`);
+  } catch (error) {
+    console.error(
+      "Erreur lors de la recuperation de l'utilisateurs :",
+      error.message
+    );
+    res
+      .status(500)
+      .json({ message: "Erreur lors de la recuperation des utilisateurs" });
+  }
+};
+// fonction dashboard
+module.exports.dashboard = async (req, res) => {
+  try {
+    // Verifier si l'utilisateur est un admin
+    if (req.user.role === "admin") {
+      // Definition de req.isAdmin sera egal a true pour les admins
+      req.isAdmin = true;
+      // Envoyer une réponse de succès
+      const user = req.user.firstname;
+      return res.status(200).json({ message: "Bienvenue Admin", user });
+    } else {
+      // Envoyer une réponse pour les utilisateurs non admin
+      const user = req.user.firstname;
+      return res.status(403).json({
+        message:
+          "Action non autorisée, seuls les admin peuvent acceder à cette page",
+        user,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur lors de la connexion" });
+  }
+};
