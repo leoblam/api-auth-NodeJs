@@ -148,7 +148,8 @@ module.exports.register = async (req, res) => {
     // Renvoie une reponse positive si l'utilisateur est bien enregistré
     const userMail = auth.email;
     res.status(201).json({
-      message: `Utilisateur crée avec succès ! Merci de bien cliquer sur le lien envoye a ${userMail} pour verifier votre compte ! `,
+      message:
+        "Utilisateur crée avec succès ! Merci de bien cliquer sur le lien envoye sur votre mail verifier votre compte !",
     });
   } catch (err) {
     // Renvoie une erreur si il y a un probleme lors de l'enregistrement de l'utilisateur

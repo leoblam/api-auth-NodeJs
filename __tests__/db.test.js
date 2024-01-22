@@ -7,7 +7,7 @@ beforeAll(async () => {
   // Utilisation de la methode connect de mongoose pour etablir la connexion a la base de donnee
   await mongoose.connect(process.env.MONGO_URI);
 });
-// Fernmeture de la concction a la base de donne apres l'execution de tous les test
+// Fernmeture de la connection a la base de donne apres l'execution de tous les test
 afterAll(async () => {
   // Utilisation de la methode close de mongoose pour fermer la connexion a la base de donnees
   await mongoose.connection.close();
@@ -19,3 +19,5 @@ test("Should connect to the database", async () => {
   // Assertion verifiant que la connexion a la base de donnees\
   expect(isConnected).toBeTruthy();
 });
+
+// La commande de test est : yarn run test __tests__/db.test.js
