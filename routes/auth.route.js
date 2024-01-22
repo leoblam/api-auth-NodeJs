@@ -7,32 +7,63 @@ const cloudinaryUpload = require("../middleware/cloudinaryUpload");
 router.post("/register", cloudinaryUpload, authController.register);
 // Route pour l'inscription
 router.post("/register", authController.register);
+// Route pour verifier l'email
+router.get("/verify-email/:token", authController.verifyEmail);
+// Route pour envoyer l'email de reinitialisation de mot de passe
+router.post("/forgot-password", authController.forgotPassword);
+// Route pour reinitialiser le mdp
+router.put("/update-password/:token", authController.updatePassword);
 // Route pour connection
 router.post("/login", authController.login);
+
 // Route pour la modification du profil
-router.put("/update/:id", cloudinaryUpload, authController.update);
-// Route pour supprimer un utilisateur
-router.delete("/delete/:id", authController.delete);
+router.put(
+  "/update/:id",
+  cloudinaryUpload,
+  authMiddleware.verifToken,
+  authController.update
+);
+// Route pour supprimer son compte utilisateur
+router.delete("/delete/:id", authMiddleware.verifToken, authController.delete);
+// Route pour voir son profil utilisateur
+router.get("/profil/:id", authMiddleware.verifToken, authController.profil);
+
 // Route pour recuperer tous les utilisateurs
 router.get(
   "/all-users",
   authMiddleware.authentificate,
   authController.getAllUsers
 );
-// Route pour recuperer un  utilisateurvia son id
+// Route pour recuperer un utilisateur via son id admin
 router.get("/user/:id", authMiddleware.authentificate, authController.getUser);
+// Route pour modifier le profil d'un utilisateur admin
+router.get(
+  "/update-user/:id",
+  authMiddleware.authentificate,
+  cloudinaryUpload,
+  authController.updateUser
+);
+// Route pour supprimer un utilisateur admin
+router.delete(
+  "/delete-user/:id",
+  authMiddleware.authentificate,
+  authController.deleteUser
+);
 
-// Route pour le profil utilisateur
-router.get("/profil/:id", authController.profil);
-
-// Route pour le mot de passe oublie
-
-// Route protegee
+// Route pour modifier un utilisateur admin
+router.put(
+  "/update-user/:id",
+  authMiddleware.authentificate,
+  authController.deleteUser
+);
+// Fonction pour acceder a une route protegee
 router.get(
   "/dashboard",
   authMiddleware.authentificate,
   authController.dashboard
 );
+// Route pour le mot de passe oublie
+
 // Admin :
 //  Route pour completer les informations
 //  Route pour voir mes informations
