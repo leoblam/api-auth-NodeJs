@@ -33,7 +33,7 @@ describe("Register route testing", () => {
       .field("zipcode", "60200")
       .field("city", "Compiegne")
       .field("phone", "0606060606")
-      .field("email", "john102@doe.com")
+      .field("email", "john2@doe.com")
       .field("password", "qwerty123")
       // Attache un fichier a la requete (exemple image)
       .attach("image", path.resolve(__dirname, "../images/cat.png"));
