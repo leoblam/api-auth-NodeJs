@@ -1,72 +1,80 @@
-// Import du package multer
 const multer = require("multer");
-
-// Import du package cloudinary
 const cloudinary = require("cloudinary").v2;
 
-// Configuration de multer pour stocker les images dans un dossier specifique
+// Configuration de Multer pour stocker les images dans la mémoire temporaire
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 const cloudinaryUpload = async (req, res, next) => {
   try {
-    console.log("Debut du middleware cloudinaryUpload");
-    // Utilisation de Multer pour gerer le fichier depuis la requete
-    upload.single("image")(req, res, async (err) => {
-      console.log("Multer a termine de gerer le fichier");
+    console.log("Début du middleware cloudinaryUpload");
 
-      // Gestion des erreurs avec Multer
+    // Utilisation de Multer pour gérer le fichier depuis la requête
+    upload.single("image")(req, res, async (err) => {
+      console.log("Multer a terminé de gérer le fichier");
+
+      // Gestion des erreurs Multer
       if (err) {
-        console.error("Erreur lors du televersement avec Multer:", err);
+        console.error("Erreur lors du téléversement avec Multer :", err);
         return res
           .status(500)
-          .json({ message: "erreur lors du televersement avec Multer" });
+          .json({ message: "Erreur lors du téléversement avec Multer" });
       }
-      // Verification de l'existence du fichier dans la requete
+
+      // Si aucun fichier n'est présent dans la requête, poursuivre sans erreur
       if (!req.file) {
-        return res
-          .status(400)
-          .json({ message: "Veuillez choisir une image a telecharger" });
+        console.log("Aucun fichier à téléverser, poursuite du middleware.");
+        return next();
       }
+
       try {
-        console.log("Debut du televersement sur cloudinary");
-        // Utilisation de cloudinary pour televersert l'image
+        console.log("Début du téléversement sur Cloudinary");
+
+        // Utilisation de Cloudinary pour téléverser l'image
         cloudinary.uploader
           .upload_stream(async (error, result) => {
             // Gestion des erreurs Cloudinary
             if (error) {
               console.error(
-                "Erreur lors du televersement avec cloudinary:",
+                "Erreur lors du téléversement sur Cloudinary :",
                 error
               );
               return res.status(500).json({
-                message: "Erreur lors du televersement avec cloudinary",
+                message: "Erreur lors du téléversement sur Cloudinary",
               });
             }
-            console.log("Televersement sur Cloudinary reussi");
-            // Ajout de l'url de l'image cloudinary a la requete
+
+            console.log("Téléversement sur Cloudinary réussi");
+
+            // Ajout de l'URL de l'image de Cloudinary à la requête
             req.cloudinaryUrl = result.secure_url;
-            // Ajout du public_id de l'image a la requete
+            // Ajout du public_id de l'image à la requête
             req.file.public_id = result.public_id;
-            // Passe a la prochaine etape du Middleware ou a la route
+
+            // Passe à la prochaine étape du middleware ou à la route
             next();
           })
           .end(req.file.buffer);
+
         console.log("Fin du middleware cloudinaryUpload");
       } catch (cloudinaryError) {
         console.error(
-          "Erreur lors de l'upload sur cloudinary",
+          "Erreur lors du téléversement sur Cloudinary :",
           cloudinaryError
         );
-        return res
+        res
           .status(500)
-          .json({ message: "Erreur lors de l'upload sur cloudinary" });
+          .json({ message: "Erreur lors du téléversement sur Cloudinary" });
       }
     });
   } catch (error) {
-    // Renvoie une erreur si il y a un probleme lors de la requete
-    console.error("Erreur lors de l'upload", error);
-    return res.status(500).json({ message: "Erreur lors de l'uplaod" });
+    console.error(
+      "Erreur non traitée dans le middleware cloudinaryUpload :",
+      error
+    );
+    res.status(500).json({
+      message: "Erreur non traitée dans le middleware cloudinaryUpload",
+    });
   }
 };
 

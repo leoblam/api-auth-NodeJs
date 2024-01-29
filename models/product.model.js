@@ -16,7 +16,7 @@ const productSchema = new mongoose.Schema({
     required: [true, "Veuillez ajouter la  description de votre produit."],
   },
   price: {
-    type: Number,
+    type: String,
     required: [true, "Veuillez renseigner le prix de votre produit."],
   },
   imageUrl: {

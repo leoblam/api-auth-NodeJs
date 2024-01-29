@@ -1,23 +1,22 @@
 // Importation du module mongoose
-const mongoose = require("mongoose");
-// Chargement des variables d'environement
-require("dotenv").config();
-// Connexion a la base de donnee avant l'execution de tous les tests
+const mongoose = require('mongoose');
+// Chargements des variables d'environnement
+require('dotenv').config();
+// Connexion à la base de données avant l'execution de tout les tests
 beforeAll(async () => {
-  // Utilisation de la methode connect de mongoose pour etablir la connexion a la base de donnee
-  await mongoose.connect(process.env.MONGO_URI);
-});
-// Fernmeture de la connection a la base de donne apres l'execution de tous les test
-afterAll(async () => {
-  // Utilisation de la methode close de mongoose pour fermer la connexion a la base de donnees
-  await mongoose.connection.close();
-});
-// Test verifiant que la connection a la base de donnees est bien etablie
-test("Should connect to the database", async () => {
-  // La propriete readyState de l'objet mongoose.connection est evalue a 1 lorsque la connection sera etablie
-  const isConnected = mongoose.connection.readyState === 1;
-  // Assertion verifiant que la connexion a la base de donnees\
-  expect(isConnected).toBeTruthy();
+	// Utilisation de la methode connect de mongoose pour établir la connexion à la base de données
+	await mongoose.connect(process.env.MONGO_URI);
 });
 
-// La commande de test est : yarn run test __tests__/db.test.js
+// Fermeture de la connexion à la base de données après execution de tous les tests
+afterAll(async () => {
+	// Utilisation de la méthode close de mongoose pour ferme la connexion à la base de données
+	await mongoose.connection.close();
+});
+// Test vérifiant que la connexion à la base de données est bien établie
+test('should connect to the database', async () => {
+	// La propriété readyState de l'objet mongoose.connection est évalué à lorsque la connexion sera établie
+	const isConnected = mongoose.connection.readyState === 1;
+	// Assertion vérifiant que la connexion à la base de données est bien établie
+	expect(isConnected).toBeTruthy();
+});

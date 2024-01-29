@@ -2,7 +2,7 @@
 const authModel = require("../models/auth.model");
 
 // Import de la validation des donnees
-const { validationResult } = require("express-validator");
+const { validationResult, check } = require("express-validator");
 
 // Import du modele de hashage bcrypt
 const bcrypt = require("bcryptjs");
@@ -75,6 +75,29 @@ const sendResetPassword = async (to, resetPasswordToken) => {
 module.exports.register = async (req, res) => {
   // Validation des données d'entrée
   try {
+    //Verification que les champs du formulaire ne sont pas vides au moment de la requete
+    await check("lastname", "Veuillez entrer votre nom de famille")
+      .notEmpty()
+      .run(req);
+    await check("firstname", "Veuillez entrer votre prenom")
+      .notEmpty()
+      .run(req);
+    await check("birthday", "Veuillez entrer votre date de naissance")
+      .notEmpty()
+      .run(req);
+    await check("address", "Veuillez entrer votre adresse").notEmpty().run(req);
+    await check("zipcode", "Veuillez entrer votre code postal")
+      .notEmpty()
+      .run(req);
+    await check("city", "Veuillez entrer votre ville").notEmpty().run(req);
+    await check("phone", "Veuillez entrer votre numero de telephone")
+      .notEmpty()
+      .run(req);
+    await check("email", "Veuillez entrer votre email").notEmpty().run(req);
+    await check("password", "Veuillez entrer votre mot de passe")
+      .notEmpty()
+      .run(req);
+
     // Recupération des erreurs de validations
     const errors = validationResult(req);
     // Vérification si il y a des erreurs de validation
@@ -167,6 +190,15 @@ module.exports.register = async (req, res) => {
 // Fonction pour la vérification email
 module.exports.verifyEmail = async (req, res) => {
   try {
+    // Validation champs token
+    await check("token", "Token invalide").notEmpty().isString().run(req);
+    // Recupération des erreurs de validations
+    const errors = validationResult(req);
+    // Vérification si il y a des erreurs de validation
+    if (!errors.isEmpty()) {
+      // Renvoi des erreurs de validation
+      return res.status(400).json({ errors: errors.array() });
+    }
     // Récupération du token pour le mettre en paramètre d'url
     const { token } = req.params;
 
@@ -174,8 +206,6 @@ module.exports.verifyEmail = async (req, res) => {
     const user = await authModel.findOne({ emailVerificationToken: token });
 
     if (!user) {
-      console.log("Token reçu :", token);
-
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
 
@@ -212,6 +242,15 @@ module.exports.verifyEmail = async (req, res) => {
 // Fonction pour la demande de reinitialisation de mot de passe par email
 module.exports.forgotPassword = async (req, res) => {
   try {
+    // Validation du parametre token
+    await check("token", "Token invalide").notEmpty().isString().run(req);
+    // Recupération des erreurs de validations
+    const errors = validationResult(req);
+    // Vérification si il y a des erreurs de validation
+    if (!errors.isEmpty()) {
+      // Renvoi des erreurs de validation
+      return res.status(400).json({ errors: errors.array() });
+    }
     // Variable de l'email que l"on va devoir enter dans postman pour recevoir l'email
     const { email } = req.body;
     // Rechercher l'utilisateur par email
@@ -253,6 +292,20 @@ module.exports.updatePassword = async (req, res) => {
     const { token } = req.params;
     // Ajout de deux nouveaux champs dans la requete
     const { newPassword, confirmNewPassword } = req.body;
+    // Verification si le champ Newpassword et ConfirmNewPassword ne sont pas vides
+    await check("newPassword", "Le nouveau password est requis")
+      .notEmpty()
+      .run(req);
+    await check("confirmNewPassword", "Le nouveau password est requis")
+      .notEmpty()
+      .run(req);
+    // Recupération des erreurs de validations
+    const errors = validationResult(req);
+    // Vérification si il y a des erreurs de validation
+    if (!errors.isEmpty()) {
+      // Renvoi des erreurs de validation
+      return res.status(400).json({ errors: errors.array() });
+    }
     //Verifier si les champs de mot de passe correspondent
     if (newPassword !== confirmNewPassword) {
       return res.status(400).json({
@@ -291,6 +344,12 @@ module.exports.updatePassword = async (req, res) => {
 // Fonction pour la connexion
 module.exports.login = async (req, res) => {
   try {
+    // Verification si les champs email et password du formulaire ne sont pas vides au moment de la requete
+
+    await check("email", "Veuillez entrer votre email").isEmail().run(req);
+    await check("password", "Veuillez entrer votre mot de passe")
+      .notEmpty()
+      .run(req);
     // Recuperation des erreurs de validations
     const errors = validationResult(req);
     // Verification si il y a des erreurs de validation
@@ -300,15 +359,33 @@ module.exports.login = async (req, res) => {
     }
     // Recuperation des donnees du formulaire
     const { email, password } = req.body;
-
     // Verification si l'utilisateur existe deja dans la base de donnees
     const user = await authModel.findOne({ email });
     // Si l'utilisateur n'existe pas, renvoie une erreur
-
     if (!user) {
       console.log("Utilisateur non trouve.");
       return res.status(400).json({
         message: "Email invalide",
+      });
+    }
+    // Verification si le nombre de tentative nest pas suprieur a 5
+    if (user.failedLoginAttempts >= 3) {
+      // Si le nombre de tentative est superieur a 5, renvoie une erreur
+      console.log(
+        "Trop de tentatives de connexion. Veuillez reessayer dans 5 minutes"
+      );
+      user.lockUntil = Date.now() + 5 * 60 * 1000;
+      await user.save();
+      return res.status(400).json({
+        message:
+          "Trop de tentatives de connexion. Veuillez reessayer dans 5 minutes",
+      });
+    }
+
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      console.log("Compte verrouille. Veuillez reessayer dans 5 minutes");
+      return res.status(400).json({
+        message: "Compte verrouille. Veuillez reessayer dans 5 minutes",
       });
     }
     // Verification du mot de passe
@@ -318,11 +395,19 @@ module.exports.login = async (req, res) => {
     );
     // Si le mot de passe est incorrect, renvoie une erreur
     if (!isPasswordValid) {
+      // Incrementer le nombre de tentative de connexion de 1
+      user.failedLoginAttempts += 1;
+      // Sauvegarder les modifications
+      await user.save();
       console.log("Mot de passe incorrect");
       return res.status(400).json({
         message: "Mot de passe incorrect",
       });
     }
+    // Si le mot de passe est correct, reinitialiser le nombre de tentative de connexion a 0
+    user.failedLoginAttempts = 0;
+    // Sauvegarder les modifications
+    await user.save();
     // Renvoie d'un message de succes
     console.log("Vous etes bien connecte");
     // Creation du token jwt
@@ -345,18 +430,44 @@ module.exports.login = async (req, res) => {
   }
 };
 
-// Fonctipon pour la modification du profil
+// Fonction pour la modification du profil
 module.exports.update = async (req, res) => {
   try {
-    // Recuperation des erreurs de validations
+    //Verification que les champs du formulaire ne sont pas vides au moment de la requete
+    await check("lastname", "Veuillez entrer votre nom de famille")
+      .notEmpty()
+      .run(req);
+    await check("firstname", "Veuillez entrer votre prenom")
+      .notEmpty()
+      .run(req);
+    await check("birthday", "Veuillez entrer votre date de naissance")
+      .notEmpty()
+      .run(req);
+    await check("address", "Veuillez entrer votre adresse").notEmpty().run(req);
+    await check("zipcode", "Veuillez entrer votre code postal")
+      .notEmpty()
+      .run(req);
+    await check("city", "Veuillez entrer votre ville").notEmpty().run(req);
+    await check("phone", "Veuillez entrer votre numero de telephone")
+      .optional()
+      .notEmpty()
+      .run(req);
+    await check("email", "Veuillez entrer votre email")
+      .notEmpty()
+      .notEmpty()
+      .run(req);
+    // Déclaration de variable pour la gestion des erreurs de validation
     const errors = validationResult(req);
-    // Verification si il y a des erreurs de validations
+
+    // Vérification si il y a une des erreurs de validation
     if (!errors.isEmpty()) {
-      // Renvoi des erreurs de validation
       return res.status(400).json({ errors: errors.array() });
     }
+
+    // Recupération de l'id de l'utilisateur pour le mettre en param de requête
     const userId = req.params.id;
-    // Recuperation des donnees du formulaire
+
+    // Récupération des données du formulaire
     const {
       lastname,
       firstname,
@@ -368,60 +479,56 @@ module.exports.update = async (req, res) => {
       email,
       newPassword,
     } = req.body;
-    // Verifier si l'utilisateur existe avant la mise a jour
+
+    // Vérifié si l'utilisateur existe avant la mise à jour
     const existingUser = await authModel.findById(userId);
-    // Condition si lutilisateur n'existe pas en bdd
+
+    // Condition si l'utilisateur n'existe pas en base de données
     if (!existingUser) {
-      console.error("Erreur utilisateur non trouve.");
-      return res
-        .status(404)
-        .json({ message: "Erreur utilisateur non trouve." });
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
 
-    // Verifier si une nouvelle image est telecharge et mettre a jour le chemin de l'image
+    // Verifier si une nouvelle image est télécharger, mettre à jour le chemin de l'image
     if (req.file) {
-      // Suprimmer l'ancien avatar si il y en a une
       if (existingUser.avatarPublicId) {
         await cloudinary.uploader.destroy(existingUser.avatarPublicId);
       }
-      // // Affecte un nouveau chemin et un nouvel ID a la nouvelle image
+      // Redonne une nouvelle url et un nouvel id a l'image
       existingUser.avatarUrl = req.cloudinaryUrl;
       existingUser.avatarPublicId = req.file.public_id;
+    }
 
-      existingUser.lastname = lastname;
-      existingUser.firstname = firstname;
-      existingUser.birthday = birthday;
-      existingUser.address = address;
-      existingUser.zipcode = zipcode;
-      existingUser.city = city;
-      existingUser.phone = phone;
-      // Mettre a jour l'email uniquement si fourni dans la requete
-      if (email) {
-        existingUser.email = email;
-      }
-      // Mettre a jour le mot de passe uniquement si fourni dans la requête
-      if (newPassword) {
-        existingUser.password = newPassword;
-      }
-      // Sauvegarder les modifications
-      await existingUser.save();
-      // Log de reussite
-      console.log("Profil mis a jour avec succes.");
-      return res.status(200).json({
-        message: "Profil mis a jour avec succes.",
-        user: existingUser,
-      });
+    // Mettre à jour les informations de l'utilisateur
+    existingUser.lastname = lastname;
+    existingUser.firstname = firstname;
+    existingUser.birthday = birthday;
+    existingUser.address = address;
+    existingUser.zipcode = zipcode;
+    existingUser.city = city;
+    existingUser.phone = phone;
+
+    // Mettre à jour l'email iniquement si fourni dans la requête
+    if (email) {
+      existingUser.email = email;
     }
+
+    // Mettre a jour le mot de passe uniquement si fourni dans la requête
+    if (newPassword) {
+      existingUser.password = newPassword;
+    }
+
+    // Sauvergarder les modifications
+    await existingUser.save();
+
+    // Code de success
+    res
+      .status(200)
+      .json({ message: "Profil mise à jour avec success", user: existingUser });
   } catch (error) {
-    // Renvoie une erreur si il y a un probleme lors de la mise a jour du profil.
-    console.error("Erreur lors de la mise a jour du profil.", error.message);
-    // Supprimer l'image telechargee si elle existe
-    if (req.file && req.file.public_id) {
-      await cloudinary.uploader.destroy(req.file.public_id);
-    }
-    return res
+    console.error(error);
+    res
       .status(500)
-      .json({ message: "Erreur lors de la mise a jour du profil." });
+      .json({ message: "Erreur lors de la mise à jour du profil" });
   }
 };
 
@@ -440,10 +547,8 @@ module.exports.delete = async (req, res) => {
     }
     // Supression de l'utilisateur
     await authModel.findByIdAndDelete(userId);
-    console.log("Utilisateur supprime avec succes", userId);
-    return res
-      .status(200)
-      .json({ message: "Utilisateur supprime avec succes" });
+    console.log("Profil supprimé avec success", userId);
+    return res.status(200).json({ message: "Profil supprimé avec success" });
   } catch (error) {
     // Renvoie une erreur si il y a un probleme lors de la mise a jour du profil.
     console.error("Erreur lors de la suppression du profil.", error.message);
@@ -514,13 +619,22 @@ module.exports.getUser = async (req, res) => {
 // Fonction pour recuperer son profil
 module.exports.profil = async (req, res) => {
   try {
+    // Validation du parametre id
+    await check("id", "Identifiants d'utilisateur invalide")
+      .notEmpty()
+      .isMongoId()
+      .run(req);
+    const errors = validationResult(req);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ errors: errors.array(), message: "Utilisateur non trouve" });
+    }
     // Declaration de la variable qui va recherche l'id de l'utilisateur
     const userId = req.params.id;
-    // Recuperation de tous les utilisateurs
+    // Recuperation de  l'utilisateurs
     const user = await authModel.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouve" });
-    }
+
     // Reponse de succes
     res.status(200).json({
       message: `Profil :`,
@@ -546,26 +660,17 @@ module.exports.profil = async (req, res) => {
 };
 // fonction dashboard
 module.exports.dashboard = async (req, res) => {
-  try {
-    // Verifier si l'utilisateur est un admin
-    if (req.user.role === "admin") {
-      // Definition de req.isAdmin sera egal a true pour les admins
-      req.isAdmin = true;
-      // Envoyer une réponse de succès
-      const user = req.user.firstname;
-      return res.status(200).json({ message: "Bienvenue Admin", user });
-    } else {
-      // Envoyer une réponse pour les utilisateurs non admin
-      const user = req.user.firstname;
-      return res.status(403).json({
-        message:
-          "Action non autorisée, seuls les admin peuvent acceder à cette page",
-        user,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erreur lors de la connexion" });
+  if (req.user.role === "admin") {
+    // Definition de req.isAdmin sera egal a true pour les administrateur
+    req.isAdmin = true;
+    // Envoyer une reponse de succes
+    return res.status(200).json({ message: "Bienvenue administrateur" });
+  } else {
+    //Envoyer une reponse pour les utilisateurs non admin
+    return res.status(403).json({
+      message:
+        "Action non autorisee, seul les administrateurs peuvent acceder a cette page",
+    });
   }
 };
 
@@ -596,7 +701,7 @@ module.exports.deleteUser = async (req, res) => {
     // Message de réussite
 
     console.log("Utilisateur supprimé avec succès");
-    res.status(200).json({ message: "Utilisateur supprimé avec succès" });
+    res.status(200).json({ message: "Profil mis a jour avec succes." });
   } catch (error) {
     console.error(error);
     console.log("Erreur lors de la suppression de l'utilisateur");

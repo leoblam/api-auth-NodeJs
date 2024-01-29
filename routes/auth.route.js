@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const authController = require("../controllers/auth.controller");
-const authMiddleware = require("../middleware/authentificate");
+const authMiddleware = require("../middleware/authenticate");
 const cloudinaryUpload = require("../middleware/cloudinaryUpload");
 
 // // Route pour l'upload
@@ -35,39 +35,39 @@ router.get("/api/profil/:id", authMiddleware.verifToken, authController.profil);
 // Route pour recuperer tous les utilisateurs
 router.get(
   "/api/all-users",
-  authMiddleware.authentificate,
+  authMiddleware.authenticate,
   authController.getAllUsers
 );
 // Route pour recuperer un utilisateur via son id admin
-router.get(
+router.put(
   "/api/user/:id",
-  authMiddleware.authentificate,
+  authMiddleware.authenticate,
   authController.getUser
 );
 // Route pour modifier le profil d'un utilisateur admin
 router.get(
   "/api/update-user/:id",
-  authMiddleware.authentificate,
+  authMiddleware.authenticate,
   cloudinaryUpload,
   authController.updateUser
 );
 // Route pour supprimer un utilisateur admin
 router.delete(
   "/api/delete-user/:id",
-  authMiddleware.authentificate,
+  authMiddleware.authenticate,
   authController.deleteUser
 );
 
 // Route pour modifier un utilisateur admin
 router.put(
   "/api/update-user/:id",
-  authMiddleware.authentificate,
+  authMiddleware.authenticate,
   authController.deleteUser
 );
 // Fonction pour acceder a une route protegee
 router.get(
   "/api/dashboard",
-  authMiddleware.authentificate,
+  authMiddleware.authenticate,
   authController.dashboard
 );
 
